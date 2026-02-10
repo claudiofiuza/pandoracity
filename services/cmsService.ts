@@ -2,7 +2,6 @@
 import { SiteContent } from "../types";
 import { supabase } from "../supabaseClient";
 
-// Exported to be used as initial state in components to prevent "Property does not exist on type Promise" errors
 export const DEFAULT_CONTENT: SiteContent = {
   heroTitle: "PANDORA",
   heroSubtitle: "Onde o conhecimento encontra o desconhecido. Você está pronto para o seu despertar?",
@@ -24,29 +23,64 @@ export const DEFAULT_CONTENT: SiteContent = {
 
 export const cmsService = {
   async getContent(): Promise<SiteContent> {
-    const { data, error } = await supabase.from('site_content').select('*');
-    if (error || !data || data.length === 0) return DEFAULT_CONTENT;
-    
-    const content = data.reduce((acc: any, item: any) => {
-      acc[item.key] = item.value;
-      return acc;
-    }, {});
-    
-    return { ...DEFAULT_CONTENT, ...content };
+    try {
+      const { data, error } = await supabase.from('site_content').select('*');
+      if (error) {
+        console.error("Erro ao buscar site_content:", error.message, error.details);
+        return DEFAULT_CONTENT;
+      }
+      
+      if (!data || data.length === 0) return DEFAULT_CONTENT;
+      
+      const content = data.reduce((acc: any, item: any) => {
+        acc[item.key] = item.value;
+        return acc;
+      }, {});
+      
+      return { ...DEFAULT_CONTENT, ...content };
+    } catch (e) {
+      console.error("Falha crítica no CMS (Get):", e);
+      return DEFAULT_CONTENT;
+    }
   },
 
   async saveContent(content: SiteContent) {
-    const updates = Object.entries(content).map(([key, value]) => ({
-      key,
-      value: value?.toString() || ""
-    }));
+    try {
+      const updates = Object.entries(content)
+        .filter(([_, value]) => value !== undefined)
+        .map(([key, value]) => ({
+          key,
+          value: value?.toString() || ""
+        }));
 
-    const { error } = await supabase.from('site_content').upsert(updates);
-    if (!error) window.dispatchEvent(new Event('cms-update'));
+      const { error } = await supabase.from('site_content').upsert(updates, { onConflict: 'key' });
+      
+      if (error) {
+        console.error("Erro ao salvar no Supabase (Upsert):", error.message, error.details);
+        alert(`Erro ao salvar: ${error.message}. Verifique o console para detalhes.`);
+        return false;
+      }
+
+      window.dispatchEvent(new Event('cms-update'));
+      return true;
+    } catch (e) {
+      console.error("Falha crítica no CMS (Save):", e);
+      return false;
+    }
   },
 
   async updateKey(key: string, value: string) {
-    await supabase.from('site_content').upsert({ key, value });
-    window.dispatchEvent(new Event('cms-update'));
+    try {
+      const { error } = await supabase.from('site_content').upsert({ key, value }, { onConflict: 'key' });
+      if (error) {
+        console.error(`Erro ao atualizar chave ${key}:`, error.message);
+        return false;
+      }
+      window.dispatchEvent(new Event('cms-update'));
+      return true;
+    } catch (e) {
+      console.error(`Falha crítica ao atualizar ${key}:`, e);
+      return false;
+    }
   }
 };
