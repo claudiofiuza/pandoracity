@@ -1,18 +1,31 @@
 
 import React, { useState, useEffect } from 'react';
 import { FileWarning, Lock, Eye } from 'lucide-react';
-import { cmsService } from '../services/cmsService';
+import { cmsService, DEFAULT_CONTENT } from '../services/cmsService';
 import EditableText from './EditableText';
+import { SiteContent } from '../types';
 
 interface ConfidentialProps {
   isEditMode?: boolean;
 }
 
 const Confidential: React.FC<ConfidentialProps> = ({ isEditMode = false }) => {
-  const [content, setContent] = useState(cmsService.getContent());
+  // Fixed: Initialize with DEFAULT_CONTENT synchronously
+  const [content, setContent] = useState<SiteContent>(DEFAULT_CONTENT);
 
   useEffect(() => {
-    const updateCms = () => setContent(cmsService.getContent());
+    // Fixed: Handle async content fetching
+    const fetchContent = async () => {
+      const data = await cmsService.getContent();
+      setContent(data);
+    };
+    fetchContent();
+
+    const updateCms = async () => {
+      const data = await cmsService.getContent();
+      setContent(data);
+    };
+    
     window.addEventListener('cms-update', updateCms);
     return () => window.removeEventListener('cms-update', updateCms);
   }, []);

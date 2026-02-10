@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
-import { cmsService } from '../services/cmsService';
+import { cmsService, DEFAULT_CONTENT } from '../services/cmsService';
 import { Edit2, Check, X } from 'lucide-react';
+import { SiteContent } from '../types';
 
 interface EditableTextProps {
   cmsKey: string;
@@ -11,12 +12,18 @@ interface EditableTextProps {
 }
 
 const EditableText: React.FC<EditableTextProps> = ({ cmsKey, isEditMode, className = "", multiline = false }) => {
-  const [content, setContent] = useState(cmsService.getContent());
+  const [content, setContent] = useState<SiteContent>(DEFAULT_CONTENT);
   const [isEditing, setIsEditing] = useState(false);
   const [tempValue, setTempValue] = useState("");
 
+  const fetchData = async () => {
+    const data = await cmsService.getContent();
+    setContent(data);
+  };
+
   useEffect(() => {
-    const updateCms = () => setContent(cmsService.getContent());
+    fetchData();
+    const updateCms = () => fetchData();
     window.addEventListener('cms-update', updateCms);
     return () => window.removeEventListener('cms-update', updateCms);
   }, []);
@@ -30,9 +37,9 @@ const EditableText: React.FC<EditableTextProps> = ({ cmsKey, isEditMode, classNa
     setIsEditing(true);
   };
 
-  const handleSave = (e: React.MouseEvent) => {
+  const handleSave = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    cmsService.updateKey(cmsKey, tempValue);
+    await cmsService.updateKey(cmsKey, tempValue);
     setIsEditing(false);
   };
 

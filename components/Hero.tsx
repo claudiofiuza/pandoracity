@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Play } from 'lucide-react';
-import { cmsService } from '../services/cmsService';
+import { cmsService, DEFAULT_CONTENT } from '../services/cmsService';
 import EditableText from './EditableText';
+import { SiteContent } from '../types';
 
 interface HeroProps {
   isEditMode?: boolean;
@@ -10,10 +11,22 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ isEditMode = false }) => {
   const [timeLeft, setTimeLeft] = useState<number>(0);
-  const [content, setContent] = useState(cmsService.getContent());
+  // Fixed: Initialize state with DEFAULT_CONTENT instead of the result of an async call
+  const [content, setContent] = useState<SiteContent>(DEFAULT_CONTENT);
 
   useEffect(() => {
-    const updateCms = () => setContent(cmsService.getContent());
+    // Fixed: Handle async content fetching
+    const fetchContent = async () => {
+      const data = await cmsService.getContent();
+      setContent(data);
+    };
+    fetchContent();
+
+    const updateCms = async () => {
+      const data = await cmsService.getContent();
+      setContent(data);
+    };
+    
     window.addEventListener('cms-update', updateCms);
     
     const calculateTime = () => {

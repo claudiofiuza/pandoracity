@@ -1,18 +1,31 @@
 
 import React, { useState, useEffect } from 'react';
 import NanoImage from './NanoImage';
-import { cmsService } from '../services/cmsService';
+import { cmsService, DEFAULT_CONTENT } from '../services/cmsService';
 import EditableText from './EditableText';
+import { SiteContent } from '../types';
 
 interface LoreProps {
   isEditMode?: boolean;
 }
 
 const Lore: React.FC<LoreProps> = ({ isEditMode = false }) => {
-  const [content, setContent] = useState(cmsService.getContent());
+  // Fixed: Initialize with DEFAULT_CONTENT instead of a Promise
+  const [content, setContent] = useState<SiteContent>(DEFAULT_CONTENT);
 
   useEffect(() => {
-    const updateCms = () => setContent(cmsService.getContent());
+    // Fixed: Handle async content fetching
+    const fetchContent = async () => {
+      const data = await cmsService.getContent();
+      setContent(data);
+    };
+    fetchContent();
+
+    const updateCms = async () => {
+      const data = await cmsService.getContent();
+      setContent(data);
+    };
+    
     window.addEventListener('cms-update', updateCms);
     return () => window.removeEventListener('cms-update', updateCms);
   }, []);
