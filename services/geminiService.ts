@@ -1,10 +1,10 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
+// Guideline: Create a new GoogleGenAI instance right before making an API call to ensure it always uses the most up-to-date API key.
 export async function askLoreKeeper(question: string) {
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: question,
@@ -17,6 +17,7 @@ export async function askLoreKeeper(question: string) {
         temperature: 0.8,
       },
     });
+    // Guideline: The GenerateContentResponse object features a text property (not a method).
     return response.text;
   } catch (error) {
     console.error("Error asking Lore Keeper:", error);
@@ -24,8 +25,10 @@ export async function askLoreKeeper(question: string) {
   }
 }
 
+// Guideline: Create a new GoogleGenAI instance right before making an API call.
 export async function generateNanoImage(prompt: string): Promise<string | null> {
   try {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
       contents: {
@@ -33,7 +36,9 @@ export async function generateNanoImage(prompt: string): Promise<string | null> 
       },
     });
 
-    for (const part of response.candidates[0].content.parts) {
+    // Guideline: Iterate through all parts to find the image part; use optional chaining for safety.
+    const parts = response.candidates?.[0]?.content?.parts || [];
+    for (const part of parts) {
       if (part.inlineData) {
         return `data:image/png;base64,${part.inlineData.data}`;
       }
