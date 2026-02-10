@@ -3,7 +3,9 @@ import { UpdateEntry } from "../types";
 import { cmsService } from "./cmsService";
 
 export async function sendUpdateToDiscord(update: UpdateEntry) {
-  const webhookUrl = cmsService.getWebhookUrl();
+  // Fixed: Use getContent() asynchronously and access webhookUrl property instead of calling non-existent getWebhookUrl()
+  const content = await cmsService.getContent();
+  const webhookUrl = content.webhookUrl;
   
   if (!webhookUrl) {
     console.warn("Discord Webhook URL não configurada no Painel Administrativo.");
