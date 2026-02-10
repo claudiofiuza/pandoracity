@@ -5,6 +5,7 @@ export interface Lineage {
   description: string;
   icon: string;
   color: string;
+  imageUrl?: string; 
   stats: {
     influence: number;
     potency: number;
@@ -29,7 +30,6 @@ export interface VipPlan {
   benefits: string[];
 }
 
-// Added missing VipBenefit interface
 export interface VipBenefit {
   name: string;
   basic: string | boolean;
@@ -56,18 +56,66 @@ export interface User {
 }
 
 export interface SiteContent {
+  // Navigation & Identity
+  navName: string;
+  logoUrl: string;
+
   // Hero
   heroTitle: string;
+  heroTitleSuffix: string;
   heroSubtitle: string;
   heroImageUrl: string;
   bloodMoonDate: string;
   
-  // Lore
+  // Lore Section (Home)
   loreTitle: string;
   loreText: string;
   loreImageUrl: string;
   
-  // Lists (Stored as JSON strings in DB)
+  // Lore Page (Internal)
+  lorePageHeaderTitle: string;
+  lorePageHeaderSubtitle: string;
+  lorePageHeaderImage: string;
+  lorePageTimeline1Title: string;
+  lorePageTimeline1Text: string;
+  lorePageTimeline2Title: string;
+  lorePageTimeline2Text: string;
+  lorePageTimelineImage: string;
+  lorePageSecretTitle: string;
+  lorePageSecretText: string;
+
+  // Classes Page (Internal)
+  classesPageTitle: string;
+  classesPageSubtitle: string;
+
+  // University Page (Internal)
+  uniPageTitle: string;
+  uniPageSubtitle: string;
+  uniFacility1Title: string;
+  uniFacility1Text: string;
+  uniFacility1Image: string;
+  uniFacility2Title: string;
+  uniFacility2Text: string;
+  uniFacility2Image: string;
+  uniFacility3Title: string;
+  uniFacility3Text: string;
+  uniFacility3Image: string;
+  uniFacility4Title: string;
+  uniFacility4Text: string;
+  uniFacility4Image: string;
+  uniUnderTitle: string;
+  uniUnderText: string;
+  uniUnderImage: string;
+  uniLevel1Label: string;
+  uniLevel1Desc: string;
+  uniLevel2Label: string;
+  uniLevel2Desc: string;
+  uniLevel3Label: string;
+  uniLevel3Desc: string;
+  uniLevel4Label: string;
+  uniLevel4Desc: string;
+  
+  // Lists
   lineages: string; 
   fraternities: string;
   vipPlans: string;

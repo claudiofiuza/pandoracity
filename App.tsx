@@ -9,7 +9,8 @@ import AdminDashboard from './components/AdminDashboard';
 import Footer from './components/Footer';
 import LoginModal from './components/LoginModal';
 import { Lock, LogOut, Settings, Edit3, Eye } from 'lucide-react';
-import { User } from './types';
+import { User, SiteContent } from './types';
+import { cmsService, DEFAULT_CONTENT } from './services/cmsService';
 
 export type ViewTab = 'home' | 'lore' | 'classes' | 'university' | 'updates' | 'admin';
 
@@ -18,8 +19,17 @@ const App: React.FC = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [content, setContent] = useState<SiteContent>(DEFAULT_CONTENT);
+
+  const fetchContent = async () => {
+    const data = await cmsService.getContent();
+    setContent(data);
+  };
 
   useEffect(() => {
+    fetchContent();
+    window.addEventListener('cms-update', fetchContent);
+
     const savedUser = localStorage.getItem('pandora_logged_user');
     if (savedUser) setUser(JSON.parse(savedUser));
 
@@ -32,7 +42,10 @@ const App: React.FC = () => {
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
     window.scrollTo(0, 0);
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('cms-update', fetchContent);
+    };
   }, [activeTab]);
 
   const handleLogin = (u: User) => {
@@ -63,14 +76,18 @@ const App: React.FC = () => {
     <div className={`min-h-screen bg-black overflow-x-hidden selection:bg-antique-gold selection:text-black ${isEditMode ? 'edit-active' : ''}`}>
       <nav className="fixed top-0 w-full z-[100] px-6 md:px-12 py-6 flex justify-between items-center transition-all duration-500 bg-gradient-to-b from-black via-black/80 to-transparent backdrop-blur-sm border-b border-white/5">
         <div 
-          className="flex items-center gap-2 group cursor-pointer"
+          className="flex items-center gap-4 group cursor-pointer"
           onClick={() => setActiveTab('home')}
         >
-          <div className="w-10 h-10 border-2 border-antique-gold rotate-45 flex items-center justify-center group-hover:bg-antique-gold transition-all duration-500">
-            <span className="font-gothic text-antique-gold group-hover:text-black -rotate-45 font-black text-xl">P</span>
-          </div>
-          <div className="font-gothic font-black tracking-[0.2em] text-lg hidden sm:block text-white">
-            PANDORA <span className="text-antique-gold">CITY</span>
+          {content.logoUrl ? (
+            <img src={content.logoUrl} alt="Logo" className="h-12 w-auto object-contain" />
+          ) : (
+            <div className="w-10 h-10 border-2 border-antique-gold rotate-45 flex items-center justify-center group-hover:bg-antique-gold transition-all duration-500">
+              <span className="font-gothic text-antique-gold group-hover:text-black -rotate-45 font-black text-xl">P</span>
+            </div>
+          )}
+          <div className="font-gothic font-black tracking-[0.2em] text-lg hidden sm:block text-white uppercase">
+            {content.navName}
           </div>
         </div>
         
@@ -112,9 +129,9 @@ const App: React.FC = () => {
               </button>
             </div>
           ) : (
-            <button className="px-6 py-2 border border-antique-gold text-antique-gold text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-antique-gold hover:text-black transition-all rounded-sm font-tech">
+            <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="px-6 py-2 border border-antique-gold text-antique-gold text-[10px] font-bold uppercase tracking-[0.2em] hover:bg-antique-gold hover:text-black transition-all rounded-sm font-tech">
               CONNECT DISCORD
-            </button>
+            </a>
           )}
         </div>
       </nav>
@@ -125,7 +142,6 @@ const App: React.FC = () => {
       
       <Footer setActiveTab={setActiveTab} />
 
-      {/* Admin Login Padlock */}
       <div className="fixed bottom-6 left-6 z-[200]">
         {!user && (
           <button 
