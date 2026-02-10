@@ -26,7 +26,7 @@ export const cmsService = {
     try {
       const { data, error } = await supabase.from('site_content').select('*');
       if (error) {
-        console.error("Erro ao buscar site_content:", error.message, error.details);
+        console.error("Erro Supabase (getContent):", error.message);
         return DEFAULT_CONTENT;
       }
       
@@ -39,7 +39,7 @@ export const cmsService = {
       
       return { ...DEFAULT_CONTENT, ...content };
     } catch (e) {
-      console.error("Falha crítica no CMS (Get):", e);
+      console.error("Falha crítica ao buscar conteúdo:", e);
       return DEFAULT_CONTENT;
     }
   },
@@ -53,18 +53,19 @@ export const cmsService = {
           value: value?.toString() || ""
         }));
 
+      // Executa o upsert. Importante: a coluna 'key' deve ser Primary Key no Supabase.
       const { error } = await supabase.from('site_content').upsert(updates, { onConflict: 'key' });
       
       if (error) {
-        console.error("Erro ao salvar no Supabase (Upsert):", error.message, error.details);
-        alert(`Erro ao salvar: ${error.message}. Verifique o console para detalhes.`);
+        console.error("Erro Supabase (saveContent):", error.message, error.details);
+        alert(`Erro ao salvar no banco: ${error.message}. Verifique se a tabela 'site_content' existe.`);
         return false;
       }
 
       window.dispatchEvent(new Event('cms-update'));
       return true;
     } catch (e) {
-      console.error("Falha crítica no CMS (Save):", e);
+      console.error("Falha crítica ao salvar:", e);
       return false;
     }
   },
