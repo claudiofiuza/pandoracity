@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, Permission, SiteContent } from '../types';
-import { Users, Layout, Save, UserPlus, Trash2, Shield, Image as ImageIcon, Type, Settings as SettingsIcon, Link as LinkIcon, Calendar, FileWarning, Eye, LogOut } from 'lucide-react';
+import { Users, Layout, Save, UserPlus, Trash2, Shield, Image as ImageIcon, Type, Settings as SettingsIcon, Link as LinkIcon, Calendar, FileWarning, Loader2 } from 'lucide-react';
 import { cmsService } from '../services/cmsService';
 import { supabase } from '../supabaseClient';
 
@@ -14,6 +14,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
   const [usersList, setUsersList] = useState<User[]>([]);
   const [content, setContent] = useState<SiteContent | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -28,24 +29,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
 
   const fetchData = async () => {
     setLoading(true);
-    const cmsData = await cmsService.getContent();
-    setContent(cmsData);
-    
-    if (isAdmin) {
-      const { data: usersData } = await supabase.from('staff_users').select('*');
-      if (usersData) setUsersList(usersData);
+    try {
+      const cmsData = await cmsService.getContent();
+      setContent(cmsData);
+      
+      if (isAdmin) {
+        const { data: usersData, error: uError } = await supabase.from('staff_users').select('*');
+        if (uError) console.error("Erro ao carregar usuários:", uError.message);
+        if (usersData) setUsersList(usersData);
+      }
+      
+      if (isAdmin) setActiveTab('content');
+      else setActiveTab('event');
+    } catch (e) {
+      console.error("Erro ao carregar dados do dashboard:", e);
+    } finally {
+      setLoading(false);
     }
-    
-    // Default tab based on role
-    if (isAdmin) setActiveTab('content');
-    else setActiveTab('event');
-    
-    setLoading(false);
   };
 
   if (!user || loading || !content) {
     return (
-      <div className="h-[60vh] flex items-center justify-center text-antique-gold font-tech animate-pulse uppercase tracking-[0.5em]">
+      <div className="h-[60vh] flex flex-col items-center justify-center gap-4 text-antique-gold font-tech animate-pulse uppercase tracking-[0.5em]">
+        <Loader2 className="animate-spin" size={32} />
         Sincronizando Banco de Dados...
       </div>
     );
@@ -62,19 +68,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
       setNewUsername('');
       setNewPassword('');
       fetchData();
+    } else {
+      alert(`Erro ao criar usuário: ${error.message}`);
     }
   };
 
   const deleteUser = async (id: string) => {
     if (confirm('Deletar acesso permanentemente?')) {
-      await supabase.from('staff_users').delete().eq('id', id);
-      fetchData();
+      const { error } = await supabase.from('staff_users').delete().eq('id', id);
+      if (!error) fetchData();
+      else alert(`Erro ao deletar: ${error.message}`);
     }
   };
 
   const handleSaveContent = async () => {
-    await cmsService.saveContent(content);
-    alert('Alterações aplicadas com sucesso em Pandora.');
+    setSaving(true);
+    const success = await cmsService.saveContent(content);
+    setSaving(false);
+    if (success) {
+      alert('Alterações aplicadas com sucesso em Pandora.');
+    }
   };
 
   return (
@@ -126,7 +139,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
                 onChange={e => setContent({...content, bloodMoonDate: new Date(e.target.value).toISOString()})}
                 className="w-full bg-black border border-white/10 p-4 text-white font-tech focus:border-red-600 outline-none"
               />
-              <button onClick={handleSaveContent} className="w-full py-4 bg-red-600 text-white font-tech text-xs font-black uppercase tracking-widest hover:brightness-110">
+              <button 
+                onClick={handleSaveContent} 
+                disabled={saving}
+                className="w-full py-4 bg-red-600 text-white font-tech text-xs font-black uppercase tracking-widest hover:brightness-110 disabled:opacity-50 flex justify-center items-center gap-2"
+              >
+                {saving && <Loader2 size={14} className="animate-spin" />}
                 Atualizar Cronômetro Global
               </button>
             </div>
@@ -187,8 +205,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ user }) => {
               <input value={content.systemsChaosImageUrl} onChange={e => setContent({...content, systemsChaosImageUrl: e.target.value})} className="w-full bg-black border border-white/10 p-3 text-white font-mono-rp" placeholder="URL Foto Caos" />
             </div>
           </div>
-          <button onClick={handleSaveContent} className="w-full py-5 bg-white text-black font-tech text-xs font-black tracking-[0.3em] uppercase hover:bg-antique-gold transition-colors flex items-center justify-center gap-3">
-            <Save size={18} /> Publicar Todas as Alterações de Conteúdo
+          <button 
+            onClick={handleSaveContent} 
+            disabled={saving}
+            className="w-full py-5 bg-white text-black font-tech text-xs font-black tracking-[0.3em] uppercase hover:bg-antique-gold transition-colors flex items-center justify-center gap-3 disabled:opacity-50"
+          >
+            {saving ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />} 
+            Publicar Todas as Alterações de Conteúdo
           </button>
         </div>
       )}
