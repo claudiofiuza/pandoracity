@@ -1,40 +1,52 @@
 
-import React from 'react';
-import { LINEAGES } from '../constants';
+import React, { useState, useEffect } from 'react';
+import { cmsService } from '../services/cmsService';
+import { Lineage } from '../types';
 import * as Icons from 'lucide-react';
-import NanoImage from './NanoImage';
+import EditableText from './EditableText';
+import EditableImage from './EditableImage';
 
-// Added interface to support isEditMode prop
 interface ClassesViewProps {
   isEditMode?: boolean;
 }
 
 const ClassesView: React.FC<ClassesViewProps> = ({ isEditMode = false }) => {
+  const [lineages, setLineages] = useState<Lineage[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      const content = await cmsService.getContent();
+      setLineages(JSON.parse(content.lineages || '[]'));
+    };
+    load();
+    window.addEventListener('cms-update', load);
+    return () => window.removeEventListener('cms-update', load);
+  }, []);
+
   return (
     <div className="min-h-screen animate-in fade-in duration-700 bg-[#020202]">
       <section className="py-24 px-6 max-w-7xl mx-auto">
         <div className="text-center mb-24">
           <h1 className="font-gothic text-6xl md:text-9xl font-black text-white mb-6 tracking-tighter">
-            GENETIC <span className="text-antique-gold">MATRIX</span>
+            <EditableText cmsKey="classesPageTitle" isEditMode={isEditMode} />
           </h1>
           <div className="h-px w-32 bg-antique-gold mx-auto mb-8"></div>
           <p className="max-w-2xl mx-auto text-gray-500 text-sm font-tech tracking-[0.4em] uppercase leading-relaxed">
-            Accessing phenotypic data for known lineages in the Pandora sector. Identity verification required.
+            <EditableText cmsKey="classesPageSubtitle" isEditMode={isEditMode} multiline />
           </p>
         </div>
 
         <div className="space-y-32">
-          {LINEAGES.map((lineage, index) => {
+          {lineages.map((lineage, index) => {
             const IconComponent = (Icons as any)[lineage.icon];
             const isEven = index % 2 === 0;
             return (
               <div key={lineage.id} className={`flex flex-col ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'} gap-16 items-center`}>
                 <div className="lg:w-1/2 relative group">
-                  <div className="absolute -inset-1 bg-gradient-to-r from-white/10 to-transparent opacity-20 group-hover:opacity-100 transition-opacity"></div>
                   <div className="relative border border-white/10 p-2 bg-black overflow-hidden">
-                    <NanoImage 
-                      prompt={`A cinematic portrait of a ${lineage.name} character in a dark university setting, powerful and mysterious atmosphere, high contrast`}
-                      fallbackUrl={`https://images.unsplash.com/photo-1514467950401-643a60a71f00?auto=format&fit=crop&q=80&w=800`}
+                    <img 
+                      src={lineage.imageUrl || 'https://images.unsplash.com/photo-1514467950401-643a60a71f00'} 
+                      alt={lineage.name} 
                       className="w-full aspect-video lg:aspect-square object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60"></div>
@@ -71,9 +83,9 @@ const ClassesView: React.FC<ClassesViewProps> = ({ isEditMode = false }) => {
                       </div>
                     </div>
                   </div>
-                  <button className="px-10 py-4 bg-white text-black font-tech text-[10px] font-black uppercase tracking-[0.3em] hover:bg-antique-gold transition-colors">
-                    Access Ability Tree
-                  </button>
+                  <p className="text-[10px] font-tech text-gray-600 italic">
+                    Para editar os dados desta linhagem, utilize a aba "Linhagens" no Painel Administrativo.
+                  </p>
                 </div>
               </div>
             );

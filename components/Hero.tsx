@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Play } from 'lucide-react';
+import { ChevronDown, Play } from 'lucide-center';
 import { cmsService, DEFAULT_CONTENT } from '../services/cmsService';
 import EditableText from './EditableText';
 import { SiteContent } from '../types';
+import { ChevronDown as ChevronDownIcon, Play as PlayIcon } from 'lucide-react';
 
 interface HeroProps {
   isEditMode?: boolean;
@@ -11,11 +12,9 @@ interface HeroProps {
 
 const Hero: React.FC<HeroProps> = ({ isEditMode = false }) => {
   const [timeLeft, setTimeLeft] = useState<number>(0);
-  // Fixed: Initialize state with DEFAULT_CONTENT instead of the result of an async call
   const [content, setContent] = useState<SiteContent>(DEFAULT_CONTENT);
 
   useEffect(() => {
-    // Fixed: Handle async content fetching
     const fetchContent = async () => {
       const data = await cmsService.getContent();
       setContent(data);
@@ -66,7 +65,7 @@ const Hero: React.FC<HeroProps> = ({ isEditMode = false }) => {
       </div>
 
       <div className="absolute bottom-32 right-12 z-40 hidden xl:flex flex-col items-end">
-        <span className="text-[10px] font-tech text-antique-gold uppercase tracking-[0.5em] mb-2">Next Blood Moon Event</span>
+        <span className="text-[10px] font-tech text-antique-gold uppercase tracking-[0.5em] mb-2">Próximo Evento Pandora</span>
         <div className="text-3xl font-tech text-white font-black">{formatTime(timeLeft)}</div>
         <div className="h-[2px] w-24 bg-antique-gold/30 mt-2"></div>
       </div>
@@ -78,10 +77,18 @@ const Hero: React.FC<HeroProps> = ({ isEditMode = false }) => {
           </div>
         </div>
         
-        <h1 className="glitch text-7xl md:text-[10rem] lg:text-[12rem] font-gothic font-black text-white leading-none tracking-tighter drop-shadow-2xl" data-text={content.heroTitle}>
-          <EditableText cmsKey="heroTitle" isEditMode={isEditMode} />
-          <br/>
-          <span className="text-antique-gold glow-text-gold glitch" data-text="CITY">CITY</span>
+        <h1 className="text-7xl md:text-[10rem] lg:text-[12rem] font-gothic font-black leading-none tracking-tighter drop-shadow-2xl">
+          <div className="glitch text-white inline-block" data-text={content.heroTitle}>
+            <EditableText cmsKey="heroTitle" isEditMode={isEditMode} />
+          </div>
+          {content.heroTitleSuffix && (
+            <>
+              <br/>
+              <div className="glitch text-antique-gold glow-text-gold inline-block" data-text={content.heroTitleSuffix}>
+                <EditableText cmsKey="heroTitleSuffix" isEditMode={isEditMode} />
+              </div>
+            </>
+          )}
         </h1>
 
         <div className="mt-6 text-gray-400 font-tech text-[10px] tracking-[0.4em] uppercase max-w-lg mx-auto">
@@ -90,17 +97,17 @@ const Hero: React.FC<HeroProps> = ({ isEditMode = false }) => {
 
         <div className="flex flex-col md:flex-row gap-6 justify-center items-center mt-12">
           <button className="px-12 py-5 bg-antique-gold text-black font-tech font-bold uppercase tracking-[0.3em] text-xs hover:scale-105 transition-all shadow-[0_0_20px_rgba(212,175,55,0.4)] rounded-sm">
-            APPLY FOR WHITELIST
+            SOLICITAR WHITELIST
           </button>
           <button className="px-12 py-5 border border-white/20 font-tech text-[10px] uppercase tracking-[0.3em] text-white/60 hover:text-white hover:border-antique-gold transition-all group flex items-center gap-3 bg-black/40 backdrop-blur-sm">
-            <Play size={12} className="group-hover:fill-current" /> WATCH DATABASE INTRO
+            <PlayIcon size={12} className="group-hover:fill-current" /> DATABASE INTRO
           </button>
         </div>
       </div>
 
       <div className="absolute bottom-10 flex flex-col items-center gap-2 z-30 animate-bounce cursor-pointer opacity-30">
-        <span className="text-[10px] font-tech tracking-[0.4em] text-antique-gold">Decipher Shadows</span>
-        <ChevronDown size={20} className="text-antique-gold" />
+        <span className="text-[10px] font-tech tracking-[0.4em] text-antique-gold">Decifrar Sombras</span>
+        <ChevronDownIcon size={20} className="text-antique-gold" />
       </div>
 
       <style>{`
