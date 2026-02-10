@@ -5,20 +5,36 @@ export interface Lineage {
   description: string;
   icon: string;
   color: string;
+  stats: {
+    influence: number;
+    potency: number;
+    survival: number;
+  };
 }
 
+export interface Fraternity {
+  id: string;
+  name: string;
+  example: string;
+  facade: string;
+  imageUrl: string;
+}
+
+export interface VipPlan {
+  id: string;
+  name: string;
+  price: string;
+  icon: string;
+  isPopular?: boolean;
+  benefits: string[];
+}
+
+// Added missing VipBenefit interface
 export interface VipBenefit {
   name: string;
   basic: string | boolean;
   pro: string | boolean;
   legend: string | boolean;
-}
-
-export enum LineageType {
-  WITCH = 'Bruxas',
-  WOLF = 'Lobos',
-  VAMPIRE = 'Vampiros',
-  ANGEL_DEMON = 'Anjos & Demônios'
 }
 
 export interface UpdateEntry {
@@ -44,13 +60,18 @@ export interface SiteContent {
   heroTitle: string;
   heroSubtitle: string;
   heroImageUrl: string;
-  bloodMoonDate: string; // ISO String for countdown
+  bloodMoonDate: string;
   
   // Lore
   loreTitle: string;
   loreText: string;
   loreImageUrl: string;
   
+  // Lists (Stored as JSON strings in DB)
+  lineages: string; 
+  fraternities: string;
+  vipPlans: string;
+
   // Systems
   systemsLawTitle: string;
   systemsLawText: string;
