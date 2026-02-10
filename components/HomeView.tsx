@@ -7,14 +7,18 @@ import Systems from './Systems';
 import Confidential from './Confidential';
 import VipSection from './VipSection';
 
-const HomeView: React.FC = () => {
+interface HomeViewProps {
+  isEditMode?: boolean;
+}
+
+const HomeView: React.FC<HomeViewProps> = ({ isEditMode = false }) => {
   return (
     <>
-      <Hero />
-      <Lore />
+      <Hero isEditMode={isEditMode} />
+      <Lore isEditMode={isEditMode} />
       <Lineages />
-      <Confidential />
-      <Systems />
+      <Confidential isEditMode={isEditMode} />
+      <Systems isEditMode={isEditMode} />
       <VipSection />
     </>
   );

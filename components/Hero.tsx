@@ -1,16 +1,39 @@
 
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, Play } from 'lucide-react';
+import { cmsService } from '../services/cmsService';
+import EditableText from './EditableText';
 
-const Hero: React.FC = () => {
-  const [timeLeft, setTimeLeft] = useState(345600); // Fake countdown
+interface HeroProps {
+  isEditMode?: boolean;
+}
+
+const Hero: React.FC<HeroProps> = ({ isEditMode = false }) => {
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [content, setContent] = useState(cmsService.getContent());
 
   useEffect(() => {
-    const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, []);
+    const updateCms = () => setContent(cmsService.getContent());
+    window.addEventListener('cms-update', updateCms);
+    
+    const calculateTime = () => {
+      const target = new Date(content.bloodMoonDate).getTime();
+      const now = new Date().getTime();
+      const difference = Math.max(0, Math.floor((target - now) / 1000));
+      setTimeLeft(difference);
+    };
+
+    calculateTime();
+    const timer = setInterval(calculateTime, 1000);
+
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('cms-update', updateCms);
+    };
+  }, [content.bloodMoonDate]);
 
   const formatTime = (seconds: number) => {
+    if (seconds <= 0) return "EVENT ACTIVE";
     const d = Math.floor(seconds / (3600*24));
     const h = Math.floor((seconds % (3600*24)) / 3600);
     const m = Math.floor((seconds % 3600) / 60);
@@ -23,13 +46,12 @@ const Hero: React.FC = () => {
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-black/60 z-10"></div>
         <img 
-          src="https://images.unsplash.com/photo-1605810230434-7631ac76ec81?auto=format&fit=crop&q=80&w=2000" 
-          alt="Sports Car at University Night" 
+          src={content.heroImageUrl} 
+          alt="Landing Background" 
           className="w-full h-full object-cover filter brightness-[0.4] contrast-125 scale-110 animate-slow-zoom"
         />
       </div>
 
-      {/* Right-side Event Countdown */}
       <div className="absolute bottom-32 right-12 z-40 hidden xl:flex flex-col items-end">
         <span className="text-[10px] font-tech text-antique-gold uppercase tracking-[0.5em] mb-2">Next Blood Moon Event</span>
         <div className="text-3xl font-tech text-white font-black">{formatTime(timeLeft)}</div>
@@ -43,10 +65,15 @@ const Hero: React.FC = () => {
           </div>
         </div>
         
-        <h1 className="glitch text-7xl md:text-[10rem] lg:text-[12rem] font-gothic font-black text-white leading-none tracking-tighter drop-shadow-2xl" data-text="PANDORA">
-          PANDORA<br/>
+        <h1 className="glitch text-7xl md:text-[10rem] lg:text-[12rem] font-gothic font-black text-white leading-none tracking-tighter drop-shadow-2xl" data-text={content.heroTitle}>
+          <EditableText cmsKey="heroTitle" isEditMode={isEditMode} />
+          <br/>
           <span className="text-antique-gold glow-text-gold glitch" data-text="CITY">CITY</span>
         </h1>
+
+        <div className="mt-6 text-gray-400 font-tech text-[10px] tracking-[0.4em] uppercase max-w-lg mx-auto">
+          <EditableText cmsKey="heroSubtitle" isEditMode={isEditMode} multiline />
+        </div>
 
         <div className="flex flex-col md:flex-row gap-6 justify-center items-center mt-12">
           <button className="px-12 py-5 bg-antique-gold text-black font-tech font-bold uppercase tracking-[0.3em] text-xs hover:scale-105 transition-all shadow-[0_0_20px_rgba(212,175,55,0.4)] rounded-sm">

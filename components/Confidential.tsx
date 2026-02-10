@@ -1,8 +1,22 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileWarning, Lock, Eye } from 'lucide-react';
+import { cmsService } from '../services/cmsService';
+import EditableText from './EditableText';
 
-const Confidential: React.FC = () => {
+interface ConfidentialProps {
+  isEditMode?: boolean;
+}
+
+const Confidential: React.FC<ConfidentialProps> = ({ isEditMode = false }) => {
+  const [content, setContent] = useState(cmsService.getContent());
+
+  useEffect(() => {
+    const updateCms = () => setContent(cmsService.getContent());
+    window.addEventListener('cms-update', updateCms);
+    return () => window.removeEventListener('cms-update', updateCms);
+  }, []);
+
   return (
     <section id="confidencial" className="py-32 px-4 bg-black relative">
       <div className="max-w-7xl mx-auto">
@@ -12,12 +26,12 @@ const Confidential: React.FC = () => {
               <FileWarning size={24} />
               <span className="font-tech text-xs tracking-[0.5em] uppercase">Restricted Access Level 5</span>
             </div>
-            <h2 className="text-5xl md:text-7xl font-gothic font-black text-white leading-none">
-              ARQUIVOS <br/><span className="text-red-600">CONFIDENCIAIS</span>
+            <h2 className="text-5xl md:text-7xl font-gothic font-black text-white leading-none uppercase">
+              <EditableText cmsKey="confidentialTitle" isEditMode={isEditMode} />
             </h2>
-            <p className="text-gray-500 text-lg leading-relaxed font-mono-rp">
-              [CONTEÚDO REMOVIDO PELA STAFF]. Estes documentos não deveriam existir. Eles detalham incidentes que a Universidade prefere esquecer. Ocultismo nas fraternidades, sacrifícios nas pistas de corrida... a verdade é mais estranha que a ficção.
-            </p>
+            <div className="text-gray-500 text-lg leading-relaxed font-mono-rp p-1">
+              <EditableText cmsKey="confidentialText" isEditMode={isEditMode} multiline />
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                <div className="p-4 border border-red-900/30 bg-red-900/5 group cursor-pointer hover:bg-red-900/20 transition-all">
                   <Lock size={16} className="text-red-500 mb-2" />

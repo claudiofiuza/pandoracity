@@ -4,7 +4,12 @@ import { LINEAGES } from '../constants';
 import * as Icons from 'lucide-react';
 import NanoImage from './NanoImage';
 
-const ClassesView: React.FC = () => {
+// Added interface to support isEditMode prop
+interface ClassesViewProps {
+  isEditMode?: boolean;
+}
+
+const ClassesView: React.FC<ClassesViewProps> = ({ isEditMode = false }) => {
   return (
     <div className="min-h-screen animate-in fade-in duration-700 bg-[#020202]">
       <section className="py-24 px-6 max-w-7xl mx-auto">

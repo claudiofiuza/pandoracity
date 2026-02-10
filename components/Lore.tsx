@@ -1,8 +1,22 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import NanoImage from './NanoImage';
+import { cmsService } from '../services/cmsService';
+import EditableText from './EditableText';
 
-const Lore: React.FC = () => {
+interface LoreProps {
+  isEditMode?: boolean;
+}
+
+const Lore: React.FC<LoreProps> = ({ isEditMode = false }) => {
+  const [content, setContent] = useState(cmsService.getContent());
+
+  useEffect(() => {
+    const updateCms = () => setContent(cmsService.getContent());
+    window.addEventListener('cms-update', updateCms);
+    return () => window.removeEventListener('cms-update', updateCms);
+  }, []);
+
   return (
     <section className="py-32 px-4 relative bg-black overflow-hidden">
       <div className="absolute -left-20 top-0 w-96 h-96 bg-night-purple/10 blur-[150px] rounded-full"></div>
@@ -15,7 +29,7 @@ const Lore: React.FC = () => {
             <div className="relative rounded-sm overflow-hidden border border-white/10 shadow-2xl">
               <NanoImage 
                 prompt="Cinematic dark university campus at night with purple neon windows, GTA RP style"
-                fallbackUrl="https://images.unsplash.com/photo-1541339907198-e08759df9a73?auto=format&fit=crop&q=80&w=1200"
+                fallbackUrl={content.loreImageUrl}
                 className="w-full h-[600px]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
@@ -31,18 +45,14 @@ const Lore: React.FC = () => {
               <div className="h-[2px] w-12 bg-antique-gold"></div>
               <span className="font-tech text-xs tracking-[0.5em] text-antique-gold uppercase">The Institution</span>
             </div>
-            <h2 className="text-5xl md:text-7xl font-gothic font-black text-white mb-8 leading-none">
-              BEM-VINDO AO <br/>
-              <span className="italic text-antique-gold">CAMPUS</span>
+            <h2 className="text-5xl md:text-7xl font-gothic font-black text-white mb-8 leading-none uppercase">
+              <EditableText cmsKey="loreTitle" isEditMode={isEditMode} />
             </h2>
             
             <div className="space-y-6 text-gray-400 text-lg leading-relaxed font-light">
-              <p>
-                Pandora não é uma cidade comum. É um <span className="text-white font-bold uppercase italic">campo de batalha espiritual</span> disfarçado de universidade de elite. Aqui, os exames finais são resolvidos em becos escuros ou em corridas de alta octanagem.
-              </p>
-              <p>
-                Escolha seu curso, mas saiba que sua verdadeira formação acontece quando o sol se põe. Você será o herói que desvenda os mistérios ou o vilão que os protege? No RP de Pandora, a narrativa é <span className="text-antique-gold font-bold">totalmente sua</span>.
-              </p>
+              <div className="p-1">
+                <EditableText cmsKey="loreText" isEditMode={isEditMode} multiline />
+              </div>
               
               <div className="pt-8 grid grid-cols-2 gap-4">
                 <div className="p-6 border border-white/5 bg-white/[0.02] hover:bg-white/[0.05] transition-colors rounded-sm">

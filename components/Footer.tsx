@@ -38,7 +38,7 @@ const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
               <li><button onClick={() => setActiveTab?.('home')} className="hover:text-antique-gold transition-colors">Início</button></li>
               <li><a href="#" className="hover:text-antique-gold transition-colors">Whitelist</a></li>
               <li><a href="#" className="hover:text-antique-gold transition-colors">Regras</a></li>
-              <li><a href="#" className="hover:text-antique-gold transition-colors">Mapas</a></li>
+              <li><button onClick={() => setActiveTab?.('updates')} className="hover:text-antique-gold transition-colors text-antique-gold">Atualizações</button></li>
             </ul>
           </div>
           

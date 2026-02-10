@@ -1,9 +1,23 @@
 
-import React from 'react';
-import { Shield, Zap, ChevronRight, Trophy, Car } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Shield, Zap, Trophy, Car } from 'lucide-react';
 import NanoImage from './NanoImage';
+import { cmsService } from '../services/cmsService';
+import EditableText from './EditableText';
 
-const Systems: React.FC = () => {
+interface SystemsProps {
+  isEditMode?: boolean;
+}
+
+const Systems: React.FC<SystemsProps> = ({ isEditMode = false }) => {
+  const [content, setContent] = useState(cmsService.getContent());
+
+  useEffect(() => {
+    const updateCms = () => setContent(cmsService.getContent());
+    window.addEventListener('cms-update', updateCms);
+    return () => window.removeEventListener('cms-update', updateCms);
+  }, []);
+
   return (
     <section id="sistemas" className="bg-black relative overflow-hidden py-32">
       <div className="max-w-7xl mx-auto px-4 mb-24">
@@ -35,15 +49,19 @@ const Systems: React.FC = () => {
             <div className="relative group overflow-hidden p-12 lg:p-20 bg-black">
                <div className="absolute inset-0 z-0 opacity-30 transition-all duration-700 group-hover:opacity-50">
                   <NanoImage 
-                    prompt="Cinematic GTA RP police cruiser at night with blue and red emergency lights flashing, dark urban street, wet pavement, high contrast"
-                    fallbackUrl="https://images.unsplash.com/photo-1621682372775-53744487491b?auto=format&fit=crop&q=80&w=1200"
+                    prompt="Cinematic GTA RP police cruiser at night"
+                    fallbackUrl={content.systemsLawImageUrl}
                     className="w-full h-full"
                   />
                </div>
                <div className="relative z-10">
                   <Shield size={40} className="text-blue-500 mb-6 drop-shadow-[0_0_15px_#2563eb]" />
-                  <h3 className="text-5xl font-gothic font-black text-white mb-4">A LEI</h3>
-                  <p className="text-gray-400 font-mono-rp mb-10 text-lg">"Investigue, prenda, proteja. O D.I.P está de olho em cada alma de Pandora."</p>
+                  <h3 className="text-5xl font-gothic font-black text-white mb-4 uppercase">
+                    <EditableText cmsKey="systemsLawTitle" isEditMode={isEditMode} />
+                  </h3>
+                  <div className="text-gray-400 font-mono-rp mb-10 text-lg">
+                    <EditableText cmsKey="systemsLawText" isEditMode={isEditMode} multiline />
+                  </div>
                   <ul className="space-y-3 mb-10 font-mono-rp text-sm">
                      <li className="flex justify-between border-b border-white/5 pb-1">
                         <span className="text-gray-600 uppercase">Most Wanted:</span>
@@ -62,15 +80,19 @@ const Systems: React.FC = () => {
             <div className="relative group overflow-hidden p-12 lg:p-20 bg-[#080808]">
                <div className="absolute inset-0 z-0 opacity-20 transition-all duration-700 group-hover:opacity-40">
                   <NanoImage 
-                    prompt="Neon racing garage at night, modified sports cars, GTA RP style"
-                    fallbackUrl="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=1200"
+                    prompt="Neon racing sports cars"
+                    fallbackUrl={content.systemsChaosImageUrl}
                     className="w-full h-full"
                   />
                </div>
                <div className="relative z-10 text-right flex flex-col items-end">
                   <Zap size={40} className="text-purple-500 mb-6 drop-shadow-[0_0_15px_#a855f7]" />
-                  <h3 className="text-5xl font-gothic font-black text-white mb-4">O CAOS</h3>
-                  <p className="text-gray-400 font-mono-rp mb-10 text-lg">"A noite é curta, a vida é rápida. O asfalto não perdoa os fracos."</p>
+                  <h3 className="text-5xl font-gothic font-black text-white mb-4 uppercase">
+                    <EditableText cmsKey="systemsChaosTitle" isEditMode={isEditMode} />
+                  </h3>
+                  <div className="text-gray-400 font-mono-rp mb-10 text-lg">
+                    <EditableText cmsKey="systemsChaosText" isEditMode={isEditMode} multiline />
+                  </div>
                   <ul className="space-y-3 mb-10 font-mono-rp text-sm w-full">
                      <li className="flex justify-between border-b border-white/5 pb-1">
                         <span className="text-white">Midnight Outlaws</span>

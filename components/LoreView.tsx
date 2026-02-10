@@ -3,7 +3,12 @@ import React from 'react';
 import NanoImage from './NanoImage';
 import { History, MapPin, Search } from 'lucide-react';
 
-const LoreView: React.FC = () => {
+// Added interface to support isEditMode prop
+interface LoreViewProps {
+  isEditMode?: boolean;
+}
+
+const LoreView: React.FC<LoreViewProps> = ({ isEditMode = false }) => {
   return (
     <div className="min-h-screen animate-in fade-in duration-700">
       {/* Header Section */}

@@ -3,7 +3,12 @@ import React from 'react';
 import NanoImage from './NanoImage';
 import { BookOpen, GraduationCap, Microscope, Shield } from 'lucide-react';
 
-const UniversityView: React.FC = () => {
+// Added interface to support isEditMode prop
+interface UniversityViewProps {
+  isEditMode?: boolean;
+}
+
+const UniversityView: React.FC<UniversityViewProps> = ({ isEditMode = false }) => {
   return (
     <div className="min-h-screen animate-in fade-in duration-700">
       {/* Hero Sub-section */}
