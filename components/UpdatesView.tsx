@@ -13,6 +13,7 @@ const UpdatesView: React.FC<UpdatesViewProps> = ({ user }) => {
   const [updates, setUpdates] = useState<UpdateEntry[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -27,18 +28,26 @@ const UpdatesView: React.FC<UpdatesViewProps> = ({ user }) => {
 
   const fetchUpdates = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('updates').select('*').order('created_at', { ascending: false });
-    if (!error && data) {
-      setUpdates(data.map((u: any) => ({
-        ...u,
-        date: new Date(u.created_at).toLocaleDateString()
-      })));
+    try {
+      const { data, error } = await supabase.from('updates').select('*').order('created_at', { ascending: false });
+      if (error) {
+        console.error("Erro ao carregar updates:", error.message);
+      } else if (data) {
+        setUpdates(data.map((u: any) => ({
+          ...u,
+          date: new Date(u.created_at).toLocaleDateString()
+        })));
+      }
+    } catch (e) {
+      console.error("Falha ao buscar registros:", e);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     const newUpdate = {
       title: formData.title,
       description: formData.description,
@@ -46,20 +55,30 @@ const UpdatesView: React.FC<UpdatesViewProps> = ({ user }) => {
       author: user?.username || 'Staff'
     };
 
-    const { data, error } = await supabase.from('updates').insert(newUpdate).select().single();
-    
-    if (!error) {
-      await sendUpdateToDiscord({ ...newUpdate, id: data.id, date: new Date().toLocaleDateString() });
-      setShowForm(false);
-      setFormData({ title: '', description: '', category: 'Server' });
-      fetchUpdates();
+    try {
+      const { data, error } = await supabase.from('updates').insert(newUpdate).select().single();
+      
+      if (!error) {
+        await sendUpdateToDiscord({ ...newUpdate, id: data.id, date: new Date().toLocaleDateString() });
+        setShowForm(false);
+        setFormData({ title: '', description: '', category: 'Server' });
+        fetchUpdates();
+      } else {
+        console.error("Erro ao inserir update:", error.message);
+        alert(`Erro ao salvar update: ${error.message}`);
+      }
+    } catch (err) {
+      console.error("Falha no envio:", err);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const deleteUpdate = async (id: string) => {
     if (confirm("Deletar registro?")) {
-      await supabase.from('updates').delete().eq('id', id);
-      fetchUpdates();
+      const { error } = await supabase.from('updates').delete().eq('id', id);
+      if (!error) fetchUpdates();
+      else alert(`Erro ao deletar: ${error.message}`);
     }
   };
 
@@ -104,8 +123,11 @@ const UpdatesView: React.FC<UpdatesViewProps> = ({ user }) => {
                   <option value="Genetic">Genetic</option>
                 </select>
                 <div className="flex gap-4">
-                   <button type="submit" className="flex-1 bg-antique-gold text-black py-4 font-black uppercase">Publicar</button>
-                   <button onClick={() => setShowForm(false)} className="px-8 border border-white/10 text-white">Cancelar</button>
+                   <button type="submit" disabled={submitting} className="flex-1 bg-antique-gold text-black py-4 font-black uppercase flex justify-center items-center gap-2">
+                     {submitting && <Loader2 size={16} className="animate-spin" />}
+                     Publicar
+                   </button>
+                   <button type="button" onClick={() => setShowForm(false)} className="px-8 border border-white/10 text-white">Cancelar</button>
                 </div>
               </form>
             )}
