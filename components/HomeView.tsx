@@ -6,6 +6,7 @@ import Lineages from './Lineages';
 import Systems from './Systems';
 import Confidential from './Confidential';
 import VipSection from './VipSection';
+import FraternitiesSection from './FraternitiesSection';
 
 interface HomeViewProps {
   isEditMode?: boolean;
@@ -17,6 +18,7 @@ const HomeView: React.FC<HomeViewProps> = ({ isEditMode = false }) => {
       <Hero isEditMode={isEditMode} />
       <Lore isEditMode={isEditMode} />
       <Lineages />
+      <FraternitiesSection />
       <Confidential isEditMode={isEditMode} />
       <Systems isEditMode={isEditMode} />
       <VipSection />
